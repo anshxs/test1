@@ -1,0 +1,302 @@
+
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0612; min-height: 100vh; font-family: 'Georgia', serif; overflow-x: hidden; }
+  
+  .screen { display: none; min-height: 100vh; width: 100%; position: relative; overflow: hidden; flex-direction: column; align-items: center; justify-content: center; }
+  .screen.active { display: flex; }
+  
+  .stars { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+  .star { position: absolute; width: 2px; height: 2px; background: white; border-radius: 50%; opacity: 0.4; animation: twinkle 3s infinite alternate; }
+  @keyframes twinkle { from { opacity: 0.2; } to { opacity: 0.8; } }
+  
+  .content { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; width: 100%; padding: 40px 20px; }
+
+  /* SCREEN 1 - ENVELOPE */
+  .script-title { font-family: 'Dancing Script', cursive; font-size: 28px; color: #f0c040; margin-bottom: 30px; text-align: center; }
+  
+  .envelope-wrap { position: relative; width: 280px; height: 180px; cursor: pointer; }
+  .envelope { width: 280px; height: 180px; background: linear-gradient(135deg, #e8c9a0, #d4a870); border-radius: 8px; position: relative; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,0.4); }
+  .env-flap { position: absolute; top: 0; left: 0; width: 0; height: 0; border-left: 140px solid transparent; border-right: 140px solid transparent; border-top: 90px solid #c9a060; transform-origin: top center; transition: transform 0.8s ease; }
+  .env-flap.open { transform: rotateX(-180deg); }
+  .env-body { position: absolute; bottom: 0; left: 0; right: 0; top: 0; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 20px; }
+  .env-to { font-family: 'Dancing Script', cursive; font-size: 20px; color: #6b4423; }
+  .wax-seal { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 50px; height: 50px; background: radial-gradient(circle, #c0392b, #8b0000); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: 0 3px 10px rgba(0,0,0,0.4); transition: opacity 0.3s; }
+  .rose-corner { position: absolute; top: -15px; right: -10px; font-size: 48px; pointer-events: none; }
+  
+  .slide-btn { margin-top: 30px; background: rgba(20,10,30,0.8); border: 1.5px solid #f0c040; border-radius: 50px; padding: 14px 28px; display: flex; align-items: center; gap: 12px; cursor: pointer; position: relative; overflow: hidden; width: 280px; }
+  .slide-rose { font-size: 28px; transition: transform 0.1s; }
+  .slide-text { font-family: 'Dancing Script', cursive; color: #f0c040; font-size: 20px; flex: 1; text-align: center; }
+  .slide-track { position: absolute; inset: 0; border-radius: 50px; }
+  
+  /* Envelope open animation */
+  .letter-rising { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); background: #fffef0; width: 240px; padding: 20px; border-radius: 4px; font-size: 14px; color: #333; opacity: 0; transition: all 0.6s ease; pointer-events: none; }
+  .letter-rising.show { opacity: 1; top: -120px; }
+
+  /* SCREEN 2 - ORBS */
+  .orb-container { position: relative; width: 320px; height: 500px; display: flex; align-items: center; justify-content: center; }
+  .center-photo { width: 180px; height: 180px; border-radius: 50%; border: 3px solid #f0c040; background: #2a1a3a; display: flex; align-items: center; justify-content: center; font-size: 60px; position: relative; z-index: 2; overflow: hidden; box-shadow: 0 0 30px rgba(240,192,64,0.3); }
+  .center-photo img { width: 100%; height: 100%; object-fit: cover; }
+  .center-photo .placeholder { font-size: 40px; }
+  
+  .orb { position: absolute; width: 60px; height: 60px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #3a2a4a, #1a0d2a); border: 1.5px solid rgba(240,192,64,0.3); display: flex; align-items: center; justify-content: center; font-size: 26px; cursor: pointer; transition: transform 0.2s; z-index: 3; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+  .orb:hover { transform: scale(1.1); }
+  .orb.exploded { animation: orbExplode 0.4s forwards; pointer-events: none; }
+  @keyframes orbExplode { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.8); opacity: 0.7; } 100% { transform: scale(0); opacity: 0; } }
+  
+  .orb-top { top: 60px; left: 50%; transform: translateX(-50%); }
+  .orb-left { top: 50%; left: 10px; transform: translateY(-50%); }
+  .orb-right { top: 50%; right: 10px; transform: translateY(-50%); }
+  .orb-bottom { bottom: 60px; left: 50%; transform: translateX(-50%); }
+  
+  .orb-msg { background: rgba(30,15,45,0.9); border: 1px solid rgba(240,192,64,0.4); border-radius: 12px; padding: 12px 18px; font-size: 15px; color: white; text-align: center; width: 90%; max-width: 320px; min-height: 50px; transition: all 0.3s; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+  .orb-count { color: rgba(255,255,255,0.5); font-size: 14px; font-family: sans-serif; margin-top: 10px; }
+  
+  .emoji-burst { position: fixed; pointer-events: none; z-index: 100; font-size: 24px; animation: burstFly 1.2s forwards; }
+  @keyframes burstFly { 0% { transform: scale(0) translate(0,0); opacity: 1; } 100% { transform: scale(1.5) translate(var(--dx), var(--dy)); opacity: 0; } }
+
+  /* SCREEN 3 - BOUQUET */
+  .bouquet-img { font-size: 120px; text-align: center; animation: floatBouquet 3s ease-in-out infinite; margin-bottom: 20px; }
+  @keyframes floatBouquet { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+  .bouquet-msg { font-family: 'Dancing Script', cursive; font-size: 22px; color: #f0c040; text-align: center; line-height: 1.6; margin-bottom: 30px; }
+  .please-btn { background: #f0c040; color: #1a0a00; border: none; border-radius: 50px; padding: 16px 50px; font-family: 'Dancing Script', cursive; font-size: 22px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 20px rgba(240,192,64,0.4); }
+  .please-btn:hover { transform: scale(1.05); box-shadow: 0 6px 30px rgba(240,192,64,0.6); }
+  .falling-flower { position: fixed; font-size: 24px; animation: fallDown linear forwards; pointer-events: none; z-index: 10; top: -40px; }
+  @keyframes fallDown { 0% { transform: translateY(0) rotate(0deg); opacity: 1; } 100% { transform: translateY(110vh) rotate(360deg); opacity: 0.5; } }
+
+  /* SCREEN 4 - PHOTOS */
+  .photos-title { font-family: 'Dancing Script', cursive; font-size: 26px; color: #f0c040; text-align: center; margin-bottom: 30px; }
+  .polaroid-grid { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-bottom: 30px; }
+  .polaroid { background: white; padding: 10px 10px 30px 10px; border-radius: 3px; box-shadow: 0 8px 25px rgba(0,0,0,0.5); transform: rotate(-3deg); width: 140px; transition: transform 0.3s; }
+  .polaroid:nth-child(2) { transform: rotate(3deg); }
+  .polaroid:hover { transform: scale(1.05) rotate(0deg) !important; }
+  .polaroid-img { width: 100%; height: 130px; background: #c8a0b0; display: flex; align-items: center; justify-content: center; font-size: 40px; overflow: hidden; }
+  .polaroid-img img { width: 100%; height: 100%; object-fit: cover; }
+  .heart-between { font-size: 24px; display: flex; align-items: center; }
+  .next-btn { background: rgba(60,40,80,0.8); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 50px; padding: 12px 35px; font-family: 'Dancing Script', cursive; font-size: 18px; cursor: pointer; }
+
+  /* SCREEN 5 - FINAL CARD */
+  .final-card { background: rgba(40,20,60,0.9); border: 1px solid rgba(240,192,64,0.4); border-radius: 20px; padding: 30px 25px; width: 90%; max-width: 340px; position: relative; }
+  .card-subtitle { font-size: 11px; letter-spacing: 3px; color: rgba(240,192,64,0.7); text-align: center; font-family: sans-serif; margin-bottom: 12px; }
+  .card-name { font-family: 'Dancing Script', cursive; font-size: 52px; color: #e8341e; text-align: center; margin-bottom: 20px; }
+  .card-quote { font-family: 'Dancing Script', cursive; font-size: 18px; color: rgba(255,255,255,0.9); text-align: center; line-height: 1.8; font-style: italic; }
+  .card-footer { text-align: center; margin-top: 20px; font-size: 12px; color: rgba(255,255,255,0.4); font-family: sans-serif; }
+  .card-deco { position: absolute; top: 15px; right: 15px; font-size: 18px; color: rgba(240,192,64,0.5); }
+  .card-deco-tl { position: absolute; top: 15px; left: 15px; font-size: 16px; }
+  .floating-flowers-bg { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
+</style>
+
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;600&display=swap" rel="stylesheet">
+
+<div class="stars" id="stars"></div>
+
+<!-- SCREEN 1: ENVELOPE -->
+<div class="screen active" id="screen1">
+  <div class="content">
+    <div class="script-title">Something I needed to say</div>
+    
+    <div class="envelope-wrap" id="envelopeWrap">
+      <div class="envelope" id="envelope">
+        <div class="env-flap" id="envFlap"></div>
+        <div class="env-body">
+          <div class="env-to">To: Preetika</div>
+        </div>
+        <div class="wax-seal" id="waxSeal">💋</div>
+      </div>
+      <div class="rose-corner">🌸</div>
+    </div>
+
+    <div class="slide-btn" id="slideBtn">
+      <span class="slide-rose" id="slideRose">🌹</span>
+      <span class="slide-text">Slide the rose to open →</span>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN 2: ORBS -->
+<div class="screen" id="screen2">
+  <div class="content" style="padding: 20px;">
+    <div class="orb-msg" id="orbMsg">
+      <span id="orbMsgEmoji" style="font-size:24px">💫</span>
+      <span id="orbMsgText" style="flex:1">Tap the orbs to reveal...</span>
+    </div>
+    
+    <div class="orb-container">
+      <div class="orb orb-top" id="orb0" onclick="tapOrb(0)">💔</div>
+      <div class="orb orb-left" id="orb1" onclick="tapOrb(1)">🌹</div>
+      <div class="center-photo">
+        <span class="placeholder">🧡</span>
+      </div>
+      <div class="orb orb-right" id="orb2" onclick="tapOrb(2)">😔</div>
+      <div class="orb orb-bottom" id="orb3" onclick="tapOrb(3)">💝</div>
+    </div>
+    
+    <div class="orb-count" id="orbCount">Tap the orbs! (0 / 4)</div>
+  </div>
+</div>
+
+<!-- SCREEN 3: BOUQUET -->
+<div class="screen" id="screen3">
+  <div class="floating-flowers-bg" id="flowersBg"></div>
+  <div class="content" style="z-index:1">
+    <div class="bouquet-img">💐</div>
+    <div class="bouquet-msg">I'm sorry for how I made you feel.<br>Please forgive me if you can.</div>
+    <button class="please-btn" onclick="goScreen(4)">Please 🥺</button>
+  </div>
+</div>
+
+<!-- SCREEN 4: PHOTOS -->
+<div class="screen" id="screen4">
+  <div class="content">
+    <div class="photos-title">All I want is for you to smile!</div>
+    <div class="polaroid-grid">
+      <div class="polaroid">
+        <div class="polaroid-img">🌟</div>
+      </div>
+      <div class="heart-between">💛</div>
+      <div class="polaroid">
+        <div class="polaroid-img">🌈</div>
+      </div>
+    </div>
+    <button class="next-btn" onclick="goScreen(5)">Next →</button>
+  </div>
+</div>
+
+<!-- SCREEN 5: FINAL CARD -->
+<div class="screen" id="screen5">
+  <div class="floating-flowers-bg" id="finalFlowers"></div>
+  <div class="content" style="z-index:1">
+    <div class="final-card">
+      <div class="card-deco-tl">🌸</div>
+      <div class="card-deco">✨</div>
+      <div class="card-subtitle">TO MY EVERYTHING</div>
+      <div class="card-name">fqf ❤️</div>
+      <div class="card-quote">"I've been sitting with how much I hurt you, and I'm truly sorry. You matter to me far more than being right ever could. I promise to listen better, love you better, and never take you for granted again."</div>
+      <div class="card-footer">~ ✦ 🌟<br><br>💛 🌸 made with love · heartsync 🌻 🌙</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const orbMessages = [
+  { emoji: '😔', text: '"I was wrong, and I own that."' },
+  { emoji: '🌹', text: '"You deserve so much more than what I gave."' },
+  { emoji: '💔', text: '"I hate that I made you cry."' },
+  { emoji: '💝', text: '"My heart only beats for you."' }
+];
+
+let orbsPopped = 0;
+let slideX = 0;
+let isDragging = false;
+
+function makeStars() {
+  const c = document.getElementById('stars');
+  for (let i = 0; i < 80; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    s.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*100}%;animation-delay:${Math.random()*3}s;animation-duration:${2+Math.random()*3}s;`;
+    c.appendChild(s);
+  }
+}
+
+function goScreen(n) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen' + n).classList.add('active');
+  if (n === 3) startFallingFlowers('flowersBg');
+  if (n === 5) startFallingFlowers('finalFlowers');
+}
+
+const slideBtn = document.getElementById('slideBtn');
+const slideRose = document.getElementById('slideRose');
+let sliderDragging = false, sliderStart = 0, sliderCurrent = 0;
+const maxSlide = 200;
+
+function startSlide(x) { sliderDragging = true; sliderStart = x; }
+function moveSlide(x) {
+  if (!sliderDragging) return;
+  sliderCurrent = Math.max(0, Math.min(maxSlide, x - sliderStart));
+  slideRose.style.transform = `translateX(${sliderCurrent}px)`;
+  if (sliderCurrent >= maxSlide * 0.8) openEnvelope();
+}
+function endSlide() { sliderDragging = false; if (sliderCurrent < maxSlide * 0.8) { sliderCurrent = 0; slideRose.style.transform = ''; } }
+
+slideBtn.addEventListener('mousedown', e => startSlide(e.clientX));
+window.addEventListener('mousemove', e => moveSlide(e.clientX));
+window.addEventListener('mouseup', endSlide);
+slideBtn.addEventListener('touchstart', e => startSlide(e.touches[0].clientX), {passive:true});
+window.addEventListener('touchmove', e => moveSlide(e.touches[0].clientX), {passive:true});
+window.addEventListener('touchend', endSlide);
+
+function openEnvelope() {
+  const flap = document.getElementById('envFlap');
+  const seal = document.getElementById('waxSeal');
+  flap.classList.add('open');
+  seal.style.opacity = '0';
+  slideBtn.style.opacity = '0';
+  setTimeout(() => {
+    const env = document.getElementById('envelope');
+    env.style.transition = 'transform 0.6s, opacity 0.6s';
+    env.style.transform = 'scale(1.1) translateY(-20px)';
+    setTimeout(() => {
+      env.style.opacity = '0';
+      setTimeout(() => goScreen(2), 400);
+    }, 400);
+  }, 700);
+}
+
+function tapOrb(idx) {
+  const orb = document.getElementById('orb' + idx);
+  if (orb.classList.contains('exploded')) return;
+  
+  const rect = orb.getBoundingClientRect();
+  const cx = rect.left + rect.width/2;
+  const cy = rect.top + rect.height/2;
+  
+  const emojis = ['✨','💫','⭐','🌟','💖','🌸','🌺','🎆'];
+  for (let i = 0; i < 14; i++) {
+    const e = document.createElement('div');
+    e.className = 'emoji-burst';
+    e.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    const angle = (i / 14) * Math.PI * 2;
+    const dist = 60 + Math.random() * 80;
+    e.style.setProperty('--dx', Math.cos(angle) * dist + 'px');
+    e.style.setProperty('--dy', Math.sin(angle) * dist + 'px');
+    e.style.left = cx - 12 + 'px';
+    e.style.top = cy - 12 + 'px';
+    e.style.animationDuration = (0.8 + Math.random() * 0.6) + 's';
+    document.body.appendChild(e);
+    setTimeout(() => e.remove(), 1500);
+  }
+
+  orb.classList.add('exploded');
+  orbsPopped++;
+  
+  const msg = orbMessages[idx];
+  document.getElementById('orbMsgEmoji').textContent = msg.emoji;
+  document.getElementById('orbMsgText').textContent = msg.text;
+  document.getElementById('orbCount').textContent = `Tap the orbs! (${orbsPopped} / 4)`;
+
+  if (orbsPopped === 4) {
+    setTimeout(() => goScreen(3), 1000);
+  }
+}
+
+function startFallingFlowers(containerId) {
+  const container = document.getElementById(containerId);
+  const flowers = ['🌸','🌺','🌼','🌻','🌹','💐','🌷','🪷'];
+  let count = 0;
+  const interval = setInterval(() => {
+    if (count++ > 30) clearInterval(interval);
+    const f = document.createElement('div');
+    f.className = 'falling-flower';
+    f.textContent = flowers[Math.floor(Math.random() * flowers.length)];
+    f.style.left = Math.random() * 100 + 'vw';
+    f.style.animationDuration = (3 + Math.random() * 4) + 's';
+    f.style.fontSize = (16 + Math.random() * 20) + 'px';
+    container.appendChild(f);
+    setTimeout(() => f.remove(), 8000);
+  }, 300);
+}
+
+makeStars();
+</script>
