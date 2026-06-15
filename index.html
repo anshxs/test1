@@ -1,4 +1,4 @@
-
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { background: #0a0612; min-height: 100vh; font-family: 'Georgia', serif; overflow-x: hidden; }
@@ -81,6 +81,105 @@
   .card-deco { position: absolute; top: 15px; right: 15px; font-size: 18px; }
   .card-deco-tl { position: absolute; top: 15px; left: 15px; font-size: 16px; }
   .floating-flowers-bg { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
+
+
+  /* PHONE / TABLET RESPONSIVE FIXES */
+  html { -webkit-text-size-adjust: 100%; }
+  body { min-height: 100svh; }
+  .screen { min-height: 100svh; }
+  .slide-btn { touch-action: none; user-select: none; -webkit-user-select: none; }
+  .slide-rose { will-change: transform; }
+
+  @supports (min-height: 100dvh) {
+    body, .screen { min-height: 100dvh; }
+  }
+
+  @media (max-width: 600px) {
+    .content {
+      min-height: 100svh;
+      justify-content: center;
+      padding: max(24px, env(safe-area-inset-top)) 14px max(24px, env(safe-area-inset-bottom));
+    }
+
+    .script-title {
+      font-size: clamp(30px, 8.5vw, 38px);
+      margin-bottom: 36px;
+      line-height: 1.2;
+    }
+
+    .envelope-wrap {
+      width: min(92vw, 380px);
+      height: calc(min(92vw, 380px) * 0.64);
+    }
+
+    .envelope {
+      width: 100%;
+      height: 100%;
+      border-radius: 12px;
+    }
+
+    .env-flap {
+      border-left-width: calc(min(92vw, 380px) / 2);
+      border-right-width: calc(min(92vw, 380px) / 2);
+      border-top-width: calc((min(92vw, 380px) * 0.64) / 2);
+    }
+
+    .env-body { padding-bottom: 26px; }
+    .env-to { font-size: clamp(23px, 6.5vw, 29px); }
+
+    .wax-seal {
+      width: clamp(58px, 16vw, 70px);
+      height: clamp(58px, 16vw, 70px);
+      font-size: clamp(25px, 7vw, 32px);
+    }
+
+    .rose-corner {
+      font-size: clamp(56px, 16vw, 68px);
+      top: -20px;
+      right: -8px;
+    }
+
+    .slide-btn {
+      width: min(92vw, 380px);
+      margin-top: 36px;
+      padding: 16px 18px;
+    }
+
+    .slide-rose { font-size: clamp(32px, 8.5vw, 38px); }
+    .slide-text { font-size: clamp(22px, 6.2vw, 27px); }
+
+    .orb-msg { width: 94%; max-width: 360px; font-size: 15px; }
+    .orb-container {
+      width: min(94vw, 380px);
+      height: min(60vh, 500px);
+      min-height: 420px;
+    }
+    .center-photo {
+      width: clamp(170px, 50vw, 205px);
+      height: clamp(170px, 50vw, 205px);
+    }
+    .orb { width: 64px; height: 64px; font-size: 28px; }
+    .orb-left { left: 4px; }
+    .orb-right { right: 4px; }
+
+    .photos-title { font-size: clamp(26px, 7vw, 32px); }
+    .polaroid { width: min(40vw, 155px); }
+    .polaroid-img { height: min(36vw, 145px); }
+    .final-card { max-width: 370px; }
+  }
+
+  @media (min-width: 601px) and (max-width: 900px) {
+    .envelope-wrap { width: 340px; height: 218px; }
+    .envelope { width: 340px; height: 218px; }
+    .env-flap {
+      border-left-width: 170px;
+      border-right-width: 170px;
+      border-top-width: 109px;
+    }
+    .slide-btn { width: 340px; }
+    .script-title { font-size: 34px; }
+  }
+
 </style>
 
 <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;600&display=swap" rel="stylesheet">
@@ -191,7 +290,7 @@
       <div class="card-subtitle">HAPPY BIRTHDAY TO</div>
       <div class="card-name">Preetika ❤️</div>
       <div class="card-quote">"On your special day, I want you to know — you light up every room you walk into. You are so deeply loved, endlessly appreciated, and impossibly wonderful. Here's to you and the most beautiful year yet. 🎂🎉"</div>
-      <div class="card-footer">~ ✦ 🌟<br><br>💛 🌸 Made with love · Anmol Sharma 🌻 🌙</div>
+      <div class="card-footer">~ ✦ 🌟<br><br>💛 🌸 made with love · anmol sharma 🌻 🌙</div>
     </div>
   </div>
 </div>
@@ -269,16 +368,33 @@ let orbsPopped = 0;
 const slideBtn = document.getElementById('slideBtn');
 const slideRose = document.getElementById('slideRose');
 let sliderDragging = false, sliderStart = 0, sliderCurrent = 0;
-const maxSlide = 200;
 
-function startSlide(x) { sliderDragging = true; sliderStart = x; }
+function getMaxSlide() {
+  // Keeps the unwrap slider proportional on phones/tablets instead of using a fixed desktop value.
+  const width = slideBtn.getBoundingClientRect().width || 280;
+  return Math.max(170, width - 86);
+}
+
+function startSlide(x) {
+  sliderDragging = true;
+  sliderStart = x;
+  sliderCurrent = 0;
+}
 function moveSlide(x) {
   if (!sliderDragging) return;
+  const maxSlide = getMaxSlide();
   sliderCurrent = Math.max(0, Math.min(maxSlide, x - sliderStart));
   slideRose.style.transform = `translateX(${sliderCurrent}px)`;
   if (sliderCurrent >= maxSlide * 0.8) openEnvelope();
 }
-function endSlide() { sliderDragging = false; if (sliderCurrent < maxSlide * 0.8) { sliderCurrent = 0; slideRose.style.transform = ''; } }
+function endSlide() {
+  const maxSlide = getMaxSlide();
+  sliderDragging = false;
+  if (sliderCurrent < maxSlide * 0.8) {
+    sliderCurrent = 0;
+    slideRose.style.transform = '';
+  }
+}
 
 slideBtn.addEventListener('mousedown', e => startSlide(e.clientX));
 window.addEventListener('mousemove', e => moveSlide(e.clientX));
